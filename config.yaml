@@ -1,0 +1,21 @@
+title: Textract Table Analysis
+description: >
+  Uses Amazon Textract AnalyzeDocument (TABLES) to extract and format tables as markdown.
+  Recommended for structured documents such as retention schedules.
+  NOTE: This uses the AnalyzeDocument API which is approximately 10x more expensive
+  than standard text detection.
+type: object
+documents:
+  - selected
+properties:
+  to_tag:
+    title: Tag processed documents?
+    type: boolean
+    description: If selected, adds ocr_engine:textract-tables metadata tag to the document.
+categories:
+  - extraction
+  - premium
+cost:
+  price: 10
+  amount: 1
+  unit: page
