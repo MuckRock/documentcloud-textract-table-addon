@@ -15,14 +15,24 @@ from documentcloud.addon import AddOn
 
 
 def table_to_markdown(table) -> str:
+    if not table.table_cells:
+        return ""
+
+    # Group cells by row_index, sorted by col_index within each row
+    rows_dict: dict[int, list] = {}
+    for cell in table.table_cells:
+        rows_dict.setdefault(cell.row_index, []).append(cell)
+    for row_cells in rows_dict.values():
+        row_cells.sort(key=lambda c: c.col_index)
+
     rows = []
-    for row in table.rows:
-        cells = [cell.text.strip().replace("|", "\\|") for cell in row.cells]
+    for row_index in sorted(rows_dict):
+        cells = [c.text.strip().replace("|", "\\|") for c in rows_dict[row_index]]
         rows.append("| " + " | ".join(cells) + " |")
-    if rows:
-        col_count = len(list(table.rows)[0].cells)
-        separator = "| " + " | ".join(["---"] * col_count) + " |"
-        rows.insert(1, separator)
+
+    col_count = table.column_count
+    separator = "| " + " | ".join(["---"] * col_count) + " |"
+    rows.insert(1, separator)
     return "\n".join(rows)
 
 
@@ -60,7 +70,7 @@ class TextractTableAnalysis(AddOn):
                 pages = []
                 for page in document_info.pages:
                     table_md = "\n\n".join(
-                        table_to_markdown(t) for t in page.tables if t.rows
+                        table_to_markdown(t) for t in page.tables if t.table_cells
                     )
                     page_text = page.text + ("\n\n" + table_md if table_md else "")
 
