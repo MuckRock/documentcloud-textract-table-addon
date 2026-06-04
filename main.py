@@ -29,12 +29,21 @@ def table_to_markdown(table) -> str:
 class TextractTableAnalysis(AddOn):
     """Extracts tables from documents using AWS Textract AnalyzeDocument (TABLES)."""
 
+    def setup_credential_file(self):
+        """Setup credential files for AWS CLI"""
+        credentials = os.environ["TOKEN"]
+        credentials_file_path = os.path.expanduser("~/.aws/credentials")
+        aws_directory = os.path.dirname(credentials_file_path)
+        if not os.path.exists(aws_directory):
+            os.makedirs(aws_directory)
+        with open(credentials_file_path, "w", encoding="utf-8") as file:
+            file.write(credentials)
+
     def main(self):
         to_tag = self.data.get("to_tag", False)
 
-        extractor = Textractor(
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-        )
+        self.setup_credential_file()
+        extractor = Textractor(profile_name="default", region_name="us-east-1")
 
         for document in self.get_documents():
             self.set_message(f"Processing: {document.title}")
